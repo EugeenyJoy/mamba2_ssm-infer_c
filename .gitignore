@@ -1,0 +1,10 @@
+venv/
+__pycache__/
+*.pt
+*.bin
+*.pyc
+BC/
+.triton/
+data/**
+!data/
+!data/.gitkeep

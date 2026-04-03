@@ -1,0 +1,36 @@
+python mamba2_multi_train.py train --resume mamba2_multi.pt
+
+# 2. Обучение (30-40 мин на GTX 1650 Ti)
+python mamba2_multi_train.py train
+
+# 3. Дообучение на диалогах (10-15 мин)
+python mamba2_multi_train.py finetune
+
+# 4. Интерактив
+python mamba2_multi_train.py interactive
+
+# 5. C inference компиляция
+gcc -O3 -march=native -o mamba2 mamba2.c -lm
+./mamba2 mamba2_multi_weights.bin "Привет" 200 0.7
+
+
+# Экспорт весов из Python чекпоинта:
+python mamba2_multi_train.py export --model mamba2_multi.pt
+
+# Или быстрый экспорт одной командой:
+python -c "
+import torch
+from mamba2_multi_train import *
+cfg = get_config(MODEL_SIZE)
+model = Mamba2LM(**cfg)
+model.load_state_dict(torch.load('mamba2_multi.pt', map_location='cpu', weights_only=True))
+export_weights(model, 'mamba2_multi_weights.bin')
+"
+
+# Генерация
+./mamba2 mamba2_multi_weights.bin "Россия" 200 0.7
+./mamba2 mamba2_multi_weights.bin "def sort(" 150 0.5
+./mamba2 mamba2_multi_weights.bin "The " 200 0.7
+
+# Интерактивный чат
+./mamba2 mamba2_multi_weights.bin --chat
