@@ -5,6 +5,33 @@ __pycache__/
 *.pyc
 BC/
 .triton/
+
+# Модели и кэши
+*.pth
+.hf_cache/
+.cache/
+
+# Конфиденциальные файлы
+*.key
+*.pem
+*.env
+.env
+.env.local
+secrets/
+config_local.py
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Данные (если не должны быть в repo)
 data/**
-!data/
 !data/.gitkeep
+!data/README.md

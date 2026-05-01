@@ -12,6 +12,8 @@
 | `mamba2_27b.c`          | C-инференс для предобученной mamba2-2.7b (WIP)                                   |
 | `chat_mamba28b.py`      | Чат через HuggingFace transformers + state-spaces/mamba-2.8b                     |
 | `profiler.py`           | Профилирование скорости обучения                                                 |
+| `SECURITY.md`           | ⚠️ Руководство по безопасности — не коммитьте секреты!                          |
+| `.env.example`          | Шаблон конфигурации (скопируйте в `.env` и отредактируйте)                      |
 | `data/`                 | Обучающие тексты (Толстой, диалоги, английские тексты)                           |
 
 ## Быстрый старт
@@ -21,8 +23,21 @@
 - Python 3.10+, PyTorch 2.0+, CUDA GPU (GTX 1650 Ti хватает)
 - Triton (`pip install triton`)
 - GCC для C-инференса
+- python-dotenv (`pip install python-dotenv`)
 
-`pip install torch triton`
+`pip install torch triton python-dotenv`
+
+### Конфигурация
+
+**⚠️ ВАЖНО**: Скопируйте `.env.example` в `.env` и настройте параметры:
+
+```bash
+cp .env.example .env
+```
+
+Отредактируйте `.env` под вашу систему. **Никогда не коммитьте `.env` в репозиторий!**
+
+Подробнее см. [SECURITY.md](SECURITY.md) — руководство по безопасности.
 
 ### 1. Обучение с нуля
 
@@ -98,12 +113,17 @@ SSM_LLM/
 ├── mamba2_27b.c # C инференс (2.7B, WIP)  
 ├── chat_mamba28b.py # HF чат с большой моделью  
 ├── profiler.py # Бенчмарки  
+├── SECURITY.md # 🔐 Руководство по безопасности  
+├── .env.example # Шаблон конфигурации  
+├── .gitignore # Исключения из git  
+├── README.md # Этот файл  
+├── F.A.Q. # Шпаргалка по командам  
 ├── data/ # Обучающие тексты  
 │ ├── WAP1-4.txt # Война и мир  
 │ ├── english.txt # Английские тексты  
 │ ├── dialogs.txt # Диалоги для файнтюна  
 │ └── RAL.txt # Дополнительные тексты  
-└── F.A.Q. # Шпаргалка по командам  
+└── BC/ # Бэкапы и тесты  
 
 #### TODO  
 C-инференс для mamba2-2.7b с SIMD-оптимизацией  

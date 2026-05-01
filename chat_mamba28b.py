@@ -1,10 +1,12 @@
 from transformers import AutoTokenizer, MambaForCausalLM
-import torch, sys
+import torch, sys, os
 
 model_name = 'state-spaces/mamba-2.8b-hf'
+cache_dir = os.path.expanduser('~/.cache/huggingface')
+
 print("Загрузка модели (30 сек)...")
-tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir='/home/jqw/.hf_cache')
-model = MambaForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, cache_dir='/home/jqw/.hf_cache')
+tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir=cache_dir)
+model = MambaForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, cache_dir=cache_dir)
 print("Готово! Пиши (exit для выхода)\n")
 
 while True:
