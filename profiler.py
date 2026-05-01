@@ -3,7 +3,14 @@ from mamba2_multi_train import Mamba2LM, DEVICE, SEQ_LEN, BATCH_SIZE
 
 model = Mamba2LM().to(DEVICE)
 opt = torch.optim.AdamW(model.parameters(), lr=1e-4)
-scaler = torch.amp.GradScaler('cuda')
+
+# Проверка наличия CUDA перед использованием GradScaler
+if DEVICE == "cuda" and torch.cuda.is_available():
+    scaler = torch.amp.GradScaler('cuda')
+else:
+    scaler = None
+    if DEVICE == "cuda":
+        print("⚠️ Warning: CUDA not available, falling back to CPU")
 
 x = torch.randint(0, 256, (BATCH_SIZE, SEQ_LEN+1), device=DEVICE)
 inp, tgt = x[:, :-1], x[:, 1:]
@@ -11,33 +18,69 @@ inp, tgt = x[:, :-1], x[:, 1:]
 # Warmup
 for _ in range(5):
     opt.zero_grad()
-    with torch.amp.autocast('cuda'):
+    if DEVICE == "cuda":
+        with torch.amp.autocast('cuda'):
+            out = model(inp)
+            loss = F.cross_entropy(out.view(-1,256), tgt.reshape(-1))
+        if scaler:
+            scaler.scale(loss).backward()
+            scaler.step(opt); scaler.update()
+        else:
+            loss.backward()
+            opt.step()
+    else:
         out = model(inp)
         loss = F.cross_entropy(out.view(-1,256), tgt.reshape(-1))
-    scaler.scale(loss).backward()
-    scaler.step(opt); scaler.update()
-torch.cuda.synchronize()
+        loss.backward()
+        opt.step()
+
+torch.cuda.synchronize() if DEVICE == "cuda" else None
 
 N = 20
 
 # Full step
-torch.cuda.synchronize(); t0 = time.time()
+if DEVICE == "cuda":
+    torch.cuda.synchronize(); t0 = time.time()
+else:
+    t0 = time.time()
+
 for _ in range(N):
     opt.zero_grad()
-    with torch.amp.autocast('cuda'):
+    if DEVICE == "cuda":
+        with torch.amp.autocast('cuda'):
+            out = model(inp)
+            loss = F.cross_entropy(out.view(-1,256), tgt.reshape(-1))
+        if scaler:
+            scaler.scale(loss).backward()
+            scaler.step(opt); scaler.update()
+        else:
+            loss.backward()
+            opt.step()
+    else:
         out = model(inp)
         loss = F.cross_entropy(out.view(-1,256), tgt.reshape(-1))
-    scaler.scale(loss).backward()
-    scaler.step(opt); scaler.update()
-torch.cuda.synchronize()
+        loss.backward()
+        opt.step()
+
+if DEVICE == "cuda":
+    torch.cuda.synchronize()
 t_full = (time.time() - t0) / N * 1000
 
 # Forward only
-torch.cuda.synchronize(); t0 = time.time()
+if DEVICE == "cuda":
+    torch.cuda.synchronize(); t0 = time.time()
+else:
+    t0 = time.time()
+
 for _ in range(N):
-    with torch.amp.autocast('cuda'):
+    if DEVICE == "cuda":
+        with torch.amp.autocast('cuda'):
+            out = model(inp)
+    else:
         out = model(inp)
-torch.cuda.synchronize()
+
+if DEVICE == "cuda":
+    torch.cuda.synchronize()
 t_fwd = (time.time() - t0) / N * 1000
 
 t_bwd = t_full - t_fwd
